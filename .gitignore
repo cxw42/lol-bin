@@ -1,0 +1,35 @@
+# Backup files and output files
+*.swp
+*~
+*.bin
+*.o
+*.a
+*.obj
+*.ncb
+*.pdb
+*.suo
+*.idb
+*.sdf
+*.opensdf
+.*.swp
+.DS_Store
+.qmake.stash
+*~
+*.log
+core
+*.stackdump
+/*_history
+/tags
+
+# Local-configuration files
+*.view
+
+# Test outputs
+/*.osgt
+/*.osgb
+*.e
+*.map
+*.txt
+
+# readline history
+*.history
