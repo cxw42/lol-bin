@@ -10,7 +10,7 @@ export LUA_PATH="${new_lpath}${LUA_PATH:+;${LUA_PATH}}"
 
 # Add the local binaries to the path
 
-new_path="${d}/osg-bin:${d}/osg-bin/osgPlugins-3.5.6"
+new_path="${d}/bin:${d}/bin/osgPlugins-3.5.6"
 export PATH="${new_path}${PATH:+:${PATH}}"
 
 # We have to run windowed --- full-screen isn't supported yet for some reason.
@@ -30,6 +30,26 @@ $LUA_CPATH
 EOF
 
 # Fire it up!
+case "$1" in
+    --help) cat <<EOF
+runme.sh: run lua-osg-livecoding
+Options (only detected if the first parameter):
+    --help              Print this help.
+    -g                  Run livecoding in gdb.
+    -i, --interactive   Spawn a shell instead of running livecoding.exe.
+                        You can run livecoding.exe in that shell.
+
+Any other options are passed to livecoding.exe.
+EOF
+            exit
+            ;;
+    -i|--interactive)
+            export PS1="lol $PS1"
+            exec "$SHELL" -i
+            exit
+            ;;
+esac
+
 if [[ $1 == -g ]]; then
     gdb --args "${d}/livecoding.exe" "$@"
 else
