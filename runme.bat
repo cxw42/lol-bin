@@ -13,7 +13,7 @@ set LUA_PATH=lua/?.lua;lua-5.2/?.lua;lua-5.2/?/init.lua;?.lua
 
 ::# Add the local binaries to the path
 
-PATH %PATH%;bin;bin/osgPlugins-3.5.6
+PATH %PATH%;%~dp0bin;%~dp0bin\osgPlugins-3.5.6
 ::export PATH="${new_path}${PATH:+:${PATH}}"
 
 ::# We have to run windowed --- full-screen isn't supported yet for some reason.
