@@ -117,7 +117,8 @@ function Geometry.makeCylinder(color, center, float radius, float height, name)
 
 function Geometry.pos_clelies(time, radius, speed)
     --Clelies curve
-    --thanks to http://wiki.roblox.com/index.php?title=Parametric_equations
+    --thanks to http://wiki.roblox.com/index.php?title=Parametric_equations ,
+    --now available at http://blockland.wikia.com/wiki/Parametric_equations
     local sin=math.sin
     local cos=math.cos
     local pos = {}
@@ -129,6 +130,7 @@ function Geometry.pos_clelies(time, radius, speed)
 end --pos_clelies()
 sethelp(Geometry.pos_clelies,
     'pos_clelies(float time, float radius, float speed)')
+sethelp('Geometry.pos_clelies',[[See help(Geometry.pos_clelies)]])
 
 -- =====================================================================
 -- Shaders

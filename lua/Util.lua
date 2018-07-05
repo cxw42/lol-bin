@@ -1,6 +1,6 @@
 -- Util.lua: Utility package.
 
--- Copyright (c) 2017 cxw/Incline.  CC-BY-SA 3.0.  In any derivative work,
+-- Copyright (c) 2017--2018 cxw/Incline.  CC-BY-SA 3.0.  In any derivative work,
 -- mention or link to https://bitbucket.org/inclinescene/public and
 -- http://devwrench.com.
 

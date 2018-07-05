@@ -10,7 +10,7 @@
 require 'checks'
 require 'print_r'
 require 'Help'
-mathlib = require 'mathlib'
+local mathlib = require 'mathlib'
 
 -- Reminder: this is run as a chunk of its own, so no `local` variables will
 -- be exported.
@@ -136,6 +136,12 @@ rss:add(uShift)
 -- All shape-creation functions add the shape to MODEL, unless
 -- otherwise specified.
 
+function squash(x)      -- [-1,1] -> [0,1]
+    return (x*0.5)+0.5
+end
+sethelp('squash',
+    'squash(x): Map x from the range [-1,1] to the range [0,1]',true)
+
 -- Create a sphere and add it to the model.
 function sph(color, pos, radius, name)
     S = Geometry.makeSphere(
@@ -192,6 +198,16 @@ instance.  Sets S.  Texture coordinates are 0-1 on each axis.]], true)
 -- Add a Content instance representing a triangle.
 -- Corners are listed counter-clockwise.
 function tri(corner1, corner2, corner3)
+    checks('table|number','?table','?table')
+
+    if type(corner1)=='number' then     -- Make an equilateral triangle in XZ
+        local len = corner1
+        corner1={0,0,0}
+        corner2={len,0,0}
+        local tri_height = len * math.sqrt(3)*0.5
+        corner3={len*0.5, 0, tri_height}
+    end
+
     corner1 = Util.vec2seq(corner1, 3)      --regularize
     corner2 = Util.vec2seq(corner2, 3)
 
@@ -213,12 +229,37 @@ sethelp('tri',
 [[tri({x1, y1, z1}, {x2, y2, z2}, {x3, y3, z3}): make a triangle and
 return its Content instance.  Sets S.  Texture coordinates are X running 0-1
 from vertex 1 to vertex 2, and Y running 0-1 from vertex 1/2 to vertex 3.
-List vertices counter-clockwise.]], true)
+List vertices counter-clockwise.
+
+tri(len): make an equilateral triangle in the X-Z plane with its lower-left
+corner at the origin and its lower-right corner at (len,0,0).
+Vertex order is LL, LR, top.]], true)
+
 -- Remove the last-added child
 function drop()
     MODEL:removeChild(S)
 end
 sethelp('drop','drop(): Remove the last-added child (S)', true)
+
+-- Put the last-added child in the model under a transform and return
+-- the transform.
+function xform()
+    local child = S
+    MODEL:removeChild(S)
+
+    S = new('osg::MatrixTransform')
+    S.DataVariance='DYNAMIC'
+    S.Matrix=  {1,0,0,0,
+                0,1,0,0,
+                0,0,1,0,
+                0,0,0,1}
+    S:addChild(child)
+
+    MODEL:addChild(S)
+    return S
+end
+sethelp('xform',[[xform(): Put the last-added child (S) under a
+MatrixTransform and return that transform.]],true)
 
 --=========================================================================--
 
@@ -244,7 +285,7 @@ function relol()
     end
 
     -- Run LOL_RUN if specified
-    local fn = os.getenv('LOL_RUN')
+    local fn = LOL_RUN
     if fn and Util.file_readable(fn) then
         print('-- Running initial file ' .. fn)
         dofile(fn)
@@ -252,18 +293,21 @@ function relol()
         print('-- To reload it, run relol().')
     end
 
-    -- Set up to grab the new T0 on the next frame
-    doNextFrame(function(_, sim_time)
-        T0 = sim_time
-        --print('T0 is now ' .. tostring(T0))
-    end)
+    if MUSIC then   -- with MUSIC as the timebase, T0 always = 0
+        T0 = 0
+        cxx_do('rewind')
 
+    else            -- Set up to grab the new T0 on the next frame
+        doNextFrame(function(_, sim_time)
+            T0 = sim_time
+            --print('T0 is now ' .. tostring(T0))
+        end)
+    end
 end
 sethelp('relol',[[
 relol()
-  Discard any geometry you've added to the scene.
-  Also, if the environment variable LOL_RUN specifies a readable file,
-  execute it as Lua source.]], true)
+  Discard any geometry you've added to the scene.  Also, if a readable file
+  was given as a -r argument, execute it as Lua source.]], true)
 
 relol()     -- Do it, Rockapella!
 

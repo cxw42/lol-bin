@@ -11,11 +11,9 @@ local tri_side = 5                                  -- length of one side
 local tri_height = tri_side * math.sqrt(3)*0.5      -- equilateral triangle
 
 -- Make the geometry and add it to the model
-local t = tri({0,0,0},{tri_side,0,0},{tri_side*0.5, 0, tri_height})
-
-local function squash(x)    -- [-1,1] -> [0,1]
-    return (x*0.5)+0.5
-end
+local t = tri(tri_side)     --equilateral
+local tri_height = t.geom.VertexArray[2].z  -- vertex 2 is the top
+print('Height',tri_height)
 
 local function updateTriangle(time)
     -- #time is referenced to T0

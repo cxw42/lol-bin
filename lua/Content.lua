@@ -35,9 +35,8 @@ function Content.new(cls, obj)
     obj.geom.VertexArray = makearray 'osg::Vec3Array'
     obj.geom.NormalArray = makearray 'osg::Vec3Array'
     obj.geom.ColorArray = makearray 'osg::Vec4Array'
-    obj.geom.TexCoordArray = makearray 'osg::Vec2Array'
-    obj.geom.TexCoordArrayList:add(obj.geom.TexCoordArray)
-        -- Texture coords are also available for texture unit 0.  It's unit 0
+    obj.geom.TexCoordArrayList:add(makearray 'osg::Vec2Array')
+        -- Texture coords are available for texture unit 0.  It's unit 0
         -- because TexCoordArrayList is initially empty, so the add() call
         -- fills element 0.
     obj.geom.SecondaryColorArray = makearray 'osg::Vec4Array'
@@ -194,8 +193,8 @@ function Content:newvload(...)
     -- Color data, vec4
     stuffdata(data, 3, 4, self.geom.ColorArray, {0.8, 0.8, 0.0, 1.0})   -- brightish yellow
 
-    -- Texture coords, vec2
-    stuffdata(data, 4, 2, self.geom.TexCoordArray, {0,0})
+    -- Texture coords for unit 0, vec2
+    stuffdata(data, 4, 2, self.geom.TexCoordArrayList[0], {0,0})
 
     -- Secondary color, vec4
     stuffdata(data, 5, 4, self.geom.SecondaryColorArray, {0.0, 0.8, 0.8, 1.0})   -- brightish cyan
@@ -226,21 +225,26 @@ Specify nil to use the default for that parameter.
 ----- Modifying -----
 function Content:refresh()
     checks('table')
+    local g = self.geom
 
     -- Play it safe - dirty everything
-    if self.geom.VertexArray then self.geom.VertexArray:dirty() end
-    if self.geom.NormalArray then self.geom.NormalArray:dirty() end
-    if self.geom.ColorArray then self.geom.ColorArray:dirty() end
-    if self.geom.TexCoordArray then self.geom.TexCoordArray:dirty() end
-    if self.geom.SecondaryColorArray then self.geom.SecondaryColorArray:dirty() end
-    if self.geom.FogCoordArray then self.geom.FogCoordArray:dirty() end
+    if g.VertexArray then g.VertexArray:dirty() end
+    if g.NormalArray then g.NormalArray:dirty() end
+    if g.ColorArray then g.ColorArray:dirty() end
+    if g.TexCoordArrayList then
+        for i=0,g.TexCoordArrayList:size()-1 do
+            g.TexCoordArrayList[i]:dirty()
+        end
+    end
+    if g.SecondaryColorArray then g.SecondaryColorArray:dirty() end
+    if g.FogCoordArray then g.FogCoordArray:dirty() end
 
     -- Have to dirty the geometry itself, as well.
-    self.geom:dirty()
+    g:dirty()
 end
 sethelp(Content.refresh,[[c:refresh()
 Call after changing c.geom.VertexArray, c.geom.NormalArray, c.geom.ColorArray,
-c.geom.TexCoordArray, c.geom.SecondaryColorArray, or c.geom.FogCoordArray
+c.geom.TexCoordArrayList[], c.geom.SecondaryColorArray, or c.geom.FogCoordArray
 to make the changes take effect.]])
 
 return Content

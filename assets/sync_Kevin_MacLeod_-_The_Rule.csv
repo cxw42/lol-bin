@@ -1,0 +1,10 @@
+Comment,Time (s),Var1 outgoing (#uniform_name_ch1),Var1 incoming (empty => same as outgoing),"Var1 interpolation type (empty=step, or L(inear), S(mooth), R(amp))",Var2 O #uniform_ch2,I,T,Var3 O,I,T,"An extra column, to catch the `\r`s"
+song start,0,0,,L,0,,S,0,,R,
+Second salute,8.5,,,,0,1,S,,,,
+Drop starts,17.5,,,,0,1,S,0,1,R,
+Third salute,23.25,,,,0,1,S,,,,
+Higher,35.8,,,,0,1,S,,,,
+Pre-pow,48.367,,,,,,,,,,
+"Pow, yes indeed",52.54,,,,0,1,S,0.5,1,,
+Silence,55.3,,,,0,1,S,,,,
+End,56.737,1,,,0,1,S,,,,

@@ -47,20 +47,28 @@ local function updateCone(data, nv)
     -- only returns the value and doesn't take any parameters.
 
     time = nv:getSimulationTime() - T0
-        -- minus T0 => relative to last relol()
+        -- minus T0 => relative to last relol().  Because this is an
+        -- UpdateCallback and not a doPerFrame(), we don't get the
+        -- automatic shift by T0.
 
     local scale = math.max(0.1, math.abs(2 * math.sin(time)))
 
-    -- The following works
+    -- Make a uniform scaling matrix
     xform.Matrix={scale,0,0,0,
                   0,scale,0,0,
                   0,0,scale,0,
-                  0,0,0,1}
+                  0,0, 0,   1}
 
-    --[[ -- This doesn't work, and I don't know why at the moment.
+    --[[    This doesn't work.  As far as I know, that is because class
+            MatrixSerializer and macro ADD_MATRIX_SERIALIZER in
+            osg/include/osgDB/Serializer only define read and write methods
+            for the matrix as a whole, not methods to access individual
+            members of the matrix.
+
     xform.Matrix[0] = scale
     xform.Matrix[5] = scale
     xform.Matrix[10] = scale
+
     ]]--
 
     drw.Color = {time % 1.0, 1.0 - (time % 1.0), 0.5, 1.0}
@@ -74,10 +82,11 @@ MODEL:addChild(xform)
 -- === Add a per-frame callback =============================================
 local frame=0
 
-local function cone_perframe(sim_time)
+-- A doPerFrame callback, so we get the automatic shift.
+local function cone_perframe(time, sim_time)
     frame = frame + 1
     if (frame % 300) == 0 then        -- every ~5 sec
-        print('sim time',sim_time,'since T0',sim_time-T0)
+        print('sim time',sim_time,'since T0',time)
     end
 end
 
