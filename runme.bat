@@ -18,8 +18,7 @@ PATH %PATH%;%~dp0bin;%~dp0bin\osgPlugins-3.5.6
 
 ::# We have to run windowed --- full-screen isn't supported yet for some reason.
 ::set OSG_WINDOW="100 100 600 400"
-::   This doesn't take effect for some reason.  Therefore, we use the
-::   -c option below.
+::   This doesn't take effect for some reason.
 
 ::# Debug info
 ::cat <<EOF
@@ -60,7 +59,7 @@ echo %LUA_CPATH%
 ::else
 ::    "${d}/livecoding.exe" "$@"
 ::fi
-livecoding -c default.view %1 %2 %3 %4 %5 %6 %7 %8 %9
+livecoding %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 ::stty sane   # just in case of an abort
 
