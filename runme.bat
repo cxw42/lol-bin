@@ -16,9 +16,7 @@ set LUA_PATH=lua/?.lua;lua-5.2/?.lua;lua-5.2/?/init.lua;?.lua
 PATH %PATH%;%~dp0bin;%~dp0bin\osgPlugins-3.5.6
 ::export PATH="${new_path}${PATH:+:${PATH}}"
 
-::# We have to run windowed --- full-screen isn't supported yet for some reason.
-::set OSG_WINDOW="100 100 600 400"
-::   This doesn't take effect for some reason.
+set OSG_WINDOW=100 100 600 400
 
 ::# Debug info
 ::cat <<EOF

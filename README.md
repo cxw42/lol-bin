@@ -5,7 +5,7 @@ This package is hosted on scene.org and at <https://github.com/cxw42/lol-bin>.
 ## Running
 
  1. Install Cygwin, x64.  Make sure to install at least the following
-    packages: `lua`, `7-zip`, `libsndfile`, `portaudio`.
+    packages: `lua`, `w32api`, `7-zip`, `libsndfile`, `portaudio`, `gdal`.
     (Note that X11 is not required.)
  1. Unzip this somewhere convenient, preserving directory structure (`7z x`).
  1. Fire up a shell and `cd` into the directory where you unzipped.
