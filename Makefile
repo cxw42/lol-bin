@@ -41,17 +41,19 @@ CYGDLLS= \
 	/usr/bin/cygvorbisenc-2.dll \
 	/usr/bin/cygz.dll
 
-.PHONY: build-cygwin build-standalone osg other zip all
+.PHONY: build-cygwin build-standalone osg other zip all zip-norebuild
 
 # Show the package size after updating.
 all: build-cygwin build-standalone
 	@du -cks --exclude='.git/*' ${C} | head -1
 	@du -cks --exclude='.git/*' ${Z} | head -1
 
-zip: all
-	7z a -mx=9 ${C}.7z ${C}
-	7z a -mx=9 ${Z}.7z ${Z}
-	@ls -lh ${C}.7z ${Z}.7z
+zip: all zip-norebuild
+
+zip-norebuild:
+	tar cvf - ${C} | lzip -9c > ${C}.tar.lzip
+	tar cvf - ${Z} | lzip -9c > ${Z}.tar.lzip
+	@ls -lh ${C}.tar.lzip ${Z}.tar.lzip
 
 build-cygwin: osg other ${C}/livecoding.exe
 
@@ -70,8 +72,10 @@ osg:
 other:
 	### Other files ##################################################
 	@mkdir -p "${C}"
-	cp -R ${LOL}/{assets,legal,lua,samples} ${C}
-	cp runme* ${C}
+	cp -Rf ${LOL}/{assets,legal,lua,samples} ${C}
+	cp -Rf lua-5.2 ${C}
+	cp runme* default.view ${C}
+	rm -f ${C}/.livecoding.history
 
 #
 ${C}/livecoding.exe: ${LOLBUILD}/livecoding.exe
@@ -93,4 +97,6 @@ build-standalone: build-cygwin
 	@# cygwin installation
 	find ${Z} \( -name \*.exe -o -name \*.dll -o -name \*.so \) -print0 | \
 		xargs -0 -n1 sed -i 's/cygwin1\.dll/zygwin1.dll/g'
+
+	rm -f ${Z}/.livecoding.history
 

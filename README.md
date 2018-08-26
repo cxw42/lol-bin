@@ -2,13 +2,21 @@
 
 This package is hosted on scene.org and at <https://github.com/cxw42/lol-bin>.
 
-## Running
+## Running the cygwin package
 
  1. Install Cygwin, x64.  Make sure to install at least the following
-    packages: `lua`, `w32api`, `7-zip`, `libsndfile`, `portaudio`, `gdal`.
+    packages: `lua`, `w32api`, `7-zip`, `libsndfile`, `portaudio`, `gdal`,
+    `lzip`
     (Note that X11 is not required.)
- 1. Unzip this somewhere convenient, preserving directory structure (`7z x`).
- 1. Fire up a shell and `cd` into the directory where you unzipped.
+ 1. Download `cygwin.tar.lzip`.
+ 1. Fire up a cygwin shell and change to the directory where you downloaded
+    `cygwin.tar.lzip`.
+ 1. Unzip, preserving directory structure:
+
+        lzip -dc < cygwin.tar.lzip | tar xvf -
+
+    This will create a `cygwin` directory.
+ 1. `cd cygwin`
  1. `./runme.sh` to launch `livecoding.exe` with the correct settings and
     paths.  Or, to start a shell in which everything is ready, `./runme.sh -i`,
     and then `./livecoding` from the resulting shell.

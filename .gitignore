@@ -1,8 +1,10 @@
 # Backup files and output files
 /cygwin
 /cygwin.7z
+/cygwin.tar*
 /standalone
 /standalone.7z
+/standalone.tar*
 *.swp
 *~
 *.bin
