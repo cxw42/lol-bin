@@ -17,8 +17,15 @@ end --camUpdate()
 doPerFrame(camUpdate)
 
 -- Show the size of the current HUD viewport
-local hud_camera = HUD:getParent(0)
-local v = hud_camera.Viewport:get()
-print(string.format('Viewport: %dx%d@(%d,%d)', v.z, v.w, v.x, v.y))
+if BG then
+    local bg_camera = BG:getParent(0)
+    local v = bg_camera.Viewport
+    if v then
+        local d = v:get()
+        print(string.format('Viewport: %dx%d@(%d,%d)', d.z, d.w, d.x, d.y))
+    else
+        print 'Viewport: no master-camera viewport (probably multi-monitor)'
+    end
+end
 
 -- vi: set ts=4 sts=4 sw=4 et ai: --

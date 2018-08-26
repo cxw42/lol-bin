@@ -4,22 +4,27 @@
 
 require 'Help'
 
-function hudblack()
+function hudblack(whichhud)
+    local hud = whichhud or BG
     for i=0,3 do
-        HUD.ColorArray[i] = {0,0,0,1}
+        hud.ColorArray[i] = {0,0,0,1}
     end
-    HUD.ColorArray:dirty()
-    HUD:dirty()
+    hud.ColorArray:dirty()
+    hud:dirty()
 end
-sethelp('hudblack',[[hudblack(): make the whole HUD black]], true)
+sethelp('hudblack',[[
+hudblack([node]): make a whole HUD black.  If no node is given, the
+default is the background.]], true)
 
-function derezhud()
-    local parent = HUD:getParent(0)
-    parent:removeChild(HUD)
+function derezhud(whichhud)
+    local hud = whichhud or BG
+    local parent = hud:getParent(0)
+    parent:removeChild(hud)
 end
-sethelp('derezhud',[[derezhud(): remove the HUD node from the scenegraph.
-May have strange side-effects, since it doesn't currently reset the clear
-bits on the other parts of the scenegraph.  If you have problems, try
+sethelp('derezhud',[[
+derezhud([whichhud]): remove the given HUD node (default BG) from the
+scenegraph.  May have strange side-effects, since it doesn't currently reset
+the clear bits on the other parts of the scenegraph.  If you have problems, try
 hudblack() instead.]], true)
 
 print([[Run hudblack() to make the whole HUD black, or derezhud() to remove

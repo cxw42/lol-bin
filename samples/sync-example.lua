@@ -33,9 +33,10 @@ end)
 -- === Channel 1 ============================================================
 -- Channel 1 is a progress indicator
 
--- The HUD has range (0,0)->(1,1) filling the viewport.  The coordinates
+-- The background has range (0,0)->(1,1) filling the viewport.  The coordinates
 -- are X>, Y^, Z out.  Things with Z<=0 are visible.
-hudcamera = HUD:getParent(0)
+-- This is in the background, so the geometry will be on top of it.
+hudcamera = BG:getParent(0)
 local viewport = hudcamera.Viewport:get()   -- Just in case you care
 viewport = {w=viewport.z, h=viewport.w}
 
@@ -43,7 +44,7 @@ text = new 'osgText::Text'
 text.FontName='assets/AnonymousPro.ttf'     -- because it's awesome
 text.CharHeight = 0.1               -- as a percentage of the HUD
 text.TextUTF8=''                    -- initially
-text.AxisAlignment = 'XY_PLANE'     -- HUD is XY, not XZ
+text.AxisAlignment = 'XY_PLANE'     -- BG HUD is XY, not XZ
 text.Alignment = 'RIGHT_BOTTOM'     -- Stick it in the bottom-right corner
 text.Position={1,0,0}
 text.ResolutionW=64
@@ -57,6 +58,15 @@ hudcamera:addChild(text)
 doPerFrame(function()   -- Show the percentage of the way through.
     text.TextUTF8=string.format('%d%%', math.floor(curr[1]*100))
 end)
+
+-- === Foreground text ======================================================
+-- Just because this is a convenient place to show how to do it!
+
+fgtext = text:clone()
+fgtext.Position={0,0,0}
+fgtext.Alignment='LEFT_BOTTOM'
+fgtext.TextUTF8='Foreground'
+FG:addChild(fgtext)
 
 -- === Channel 2 ============================================================
 

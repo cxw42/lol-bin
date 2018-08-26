@@ -305,7 +305,7 @@ getuv_centered_hud=[[
         vec2 getuv() {  // move the origin to the center of the window
             vec2 retval;
             //return gl_Vertex.xy;  //gl_Vertex;
-            // For the HUD, (0,0)->(1,1) (LL->UR).
+            // For HUDs (e.g., background), (0,0)->(1,1) (LL->UR).
             if(iResolution.x > iResolution.y) {     // landscape - x range >1
                 retval.y = gl_Vertex.y - 0.5;       // move to the center
                 retval.x = (gl_Vertex.x - 0.5) * iResolution.x / iResolution.y;

@@ -1,8 +1,8 @@
 -- text.lua: Demonstration of text in lua-osg-livecoding
 -- cxw/Incline 2018
 
--- Show the size of the current HUD viewport
-local hud_camera = HUD:getParent(0)
+-- Show the size of the current background viewport
+local hud_camera = BG:getParent(0)
 local v = hud_camera.Viewport:get()
 print(string.format('Viewport: %dx%d@(%d,%d)', v.z, v.w, v.x, v.y))
 
@@ -12,14 +12,15 @@ text = new('osgText::Text')
 text.FontName='assets/AnonymousPro.ttf'
 text.CharHeight = 4
 text.TextUTF8='Hello, world!'
-text.AxisAlignment = 'XZ_PLANE'
+text.AxisAlignment = 'USER_DEFINED_ROTATION'
 text.Alignment = 'LEFT_BASE_LINE'
 text.Position = {1,5,0}
 
--- Tip it back 30 degrees.  Rotation back because it's right-handed --- point
--- your right thumb to the right (along the X axis) and your fingers curl in
--- the positive direction of rotation.
-text.Rotation = UTIL:quatRotate(math.rad(-30), {1,0,0})
+-- Tip it forward 30 degrees from the default orientation, which is in
+-- the XY plane.  Rotation forward is positive because it's right-handed ---
+-- point your right thumb to the right (along the X axis) and your fingers curl
+-- in the positive direction of rotation.
+text.Rotation = UTIL:quatRotate(math.rad(30), {1,0,0})
 
 -- Set properties listed in osg/src/osgWrappers/serializers/osgText/Text.cpp
 text.Color={.5,1,.5,1}

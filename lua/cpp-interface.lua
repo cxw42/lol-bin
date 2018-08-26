@@ -18,11 +18,20 @@ end
 --=========================================================================--
 -- Globals
 T0 = 0          -- the sim time of the frame after the last relol()
+CMD_TO_CPLUSPLUS = ''   -- A command the C++ side should run
+
+-- Options
 ARGV = {}       -- Extra command-line arguments
 LOL_RUN = nil   -- Filename to run
-CMD_TO_CPLUSPLUS = ''   -- A command the C++ side should run
 MUSIC = false   -- whether music is being used as the timebase (-m)
                 -- NOTE: this is still true even if the music is done playing.
+NO_AXIS_MARKERS = false     -- if true, don't add axis markers
+
+-- Nodes
+BG = nil        -- HUD behind all the other geometry, if any
+FG = nil        -- HUD in front of all the other geometry, if any
+ROOT = nil      -- root of the scene graph
+CAM = nil       -- master camera of the viewer
 
 --=========================================================================--
 -- Transferring state to and from C++

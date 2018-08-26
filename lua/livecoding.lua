@@ -15,7 +15,11 @@ local mathlib = require 'mathlib'
 -- Reminder: this is run as a chunk of its own, so no `local` variables will
 -- be exported.
 
-print("Hello, world! 42")
+print("Hello, world! from livecoding.lua")
+if ARGV and #ARGV>0 then
+    print("Extra args:")
+    print_r(ARGV)
+end
 --local inp = io.read()     -- this works fine - blocks the calling thread
 --print("Input was: ", inp)
 
@@ -78,19 +82,28 @@ local grp = new("osg::Group");
 -- Axis markers
 local axis_switch = new('osg::Switch')
 grp:addChild(axis_switch)
-axis_switch:addChild(Geometry.makeSphere({1,1,1,1}, {0,0,0}, 0.2))
-axis_switch:addChild(Geometry.makeSphere({1,0,0,1}, {5,0,0}, 0.2, 'X'))
-axis_switch:addChild(Geometry.makeSphere({0,1,0,1}, {0,5,0}, 0.2, 'Y'))
-axis_switch:addChild(Geometry.makeSphere({0,0,1,1}, {0,0,5}, 0.2, 'Z'))
+    -- Always add the switch since relol() assumes it's present.
 
+if not NO_AXIS_MARKERS then
+    axis_switch:addChild(Geometry.makeSphere({1,1,1,1}, {0,0,0}, 0.2))
+    axis_switch:addChild(Geometry.makeSphere({1,0,0,1}, {5,0,0}, 0.2, 'X'))
+    axis_switch:addChild(Geometry.makeSphere({0,1,0,1}, {0,5,0}, 0.2, 'Y'))
+    axis_switch:addChild(Geometry.makeSphere({0,0,1,1}, {0,0,5}, 0.2, 'Z'))
+end
+
+--- Toggle the axes, if any.  Always created, but is a NOP if NO_AXIS_MARKERS.
 function axis(onoff)
+    if NO_AXIS_MARKERS then return end
+
     val = not not onoff     -- make sure it's a bool
     for i=0,3 do
         axis_switch:setValue(i, val)
     end
 end
-sethelp('axis',
-    'axis(true) to turn axis markers on; axis(false) to turn them off', true)
+if not NO_AXIS_MARKERS then
+    sethelp('axis',
+        'axis(true) to turn axis markers on; axis(false) to turn them off', true)
+end
 
 print("Children:", grp:getNumChildren())
 
@@ -115,7 +128,7 @@ do
 end
 sethelp('uOrigin','uniform vec2 Origin', true)
 
--- For the HUD
+-- For the background
 uSpeed = Geometry.makeUniform('circle_speed', 'FLOAT', 4) --try 1
 sethelp('uSpeed','uniform float circle_speed', true)
 
@@ -144,6 +157,7 @@ sethelp('squash',
 
 -- Create a sphere and add it to the model.
 function sph(color, pos, radius, name)
+    checks('table','table','?number','?string')
     S = Geometry.makeSphere(
         Util.vec2seq(color, 4),
         Util.vec2seq(pos, 3),
@@ -151,9 +165,9 @@ function sph(color, pos, radius, name)
         name or '')
     MODEL:addChild(S)
 end --sph
-sethelp('sph', [[
-Create a sphere and add it to the model.  Sets S to the new shape.
-function sph(color, pos, radius, name)]], true)
+sethelp('sph', [=[
+function sph(color, pos[, radius[, name]])
+Create a sphere and add it to the model.  Sets S to the new shape.]=], true)
 
 -- Add a Content instance
 function content()
@@ -164,12 +178,14 @@ function content()
 end
 sethelp('content',
 [[content(): Creates a new Content instance and returns it.
-After that, you can use foo:startbuild(), foo:newvload(), and foo:endbuild().
-Also adds the instance's geometry (foo.geom) to the model and puts it in S.]])
+After `foo=content()`, you can use foo:startbuild(), foo:newvload(), and
+foo:endbuild().  Also adds the instance's geometry (foo.geom) to the model
+and puts it in S.]])
 
 -- Add a Content instance representing a quad.
 -- corner1-corner2 is one side, and corner1-corner3 is the diagonal.
 function quad(corner1, corner2, corner3)
+    checks('table','table','table')
     corner1 = Util.vec2seq(corner1, 3)      --regularize
     corner2 = Util.vec2seq(corner2, 3)
 
@@ -192,8 +208,10 @@ function quad(corner1, corner2, corner3)
     return retval
 end
 sethelp('quad',
-[[quad({x1, y1, z1}, {x2, y2, z2}): make a quad and return its Content
-instance.  Sets S.  Texture coordinates are 0-1 on each axis.]], true)
+[[quad({x1, y1, z1}, {x2, y2, z2}, {x3, y3, z3}): make a quad and return its
+Content instance.  1->2 is one side, and 1->3 is the diagonal.
+Adds it to MODEL and sets S.  Texture coordinates are
+0-1 on each axis.]], true)
 
 -- Add a Content instance representing a triangle.
 -- Corners are listed counter-clockwise.
@@ -228,12 +246,12 @@ end
 sethelp('tri',
 [[tri({x1, y1, z1}, {x2, y2, z2}, {x3, y3, z3}): make a triangle and
 return its Content instance.  Sets S.  Texture coordinates are X running 0-1
-from vertex 1 to vertex 2, and Y running 0-1 from vertex 1/2 to vertex 3.
+from vertex 1 to vertex 2, and Y running 0-1 from vertex 1 & 2 to vertex 3.
 List vertices counter-clockwise.
 
 tri(len): make an equilateral triangle in the X-Z plane with its lower-left
 corner at the origin and its lower-right corner at (len,0,0).
-Vertex order is LL, LR, top.]], true)
+Vertex order is LL, LR, top, so it faces in the -Y direction.]], true)
 
 -- Remove the last-added child
 function drop()
@@ -241,9 +259,41 @@ function drop()
 end
 sethelp('drop','drop(): Remove the last-added child (S)', true)
 
+-- Insert a node between another node and its first parent.
+function insert_above(orig, new)
+    checks('table','table')
+
+    -- `orig` and `new` may be Content instances.  If so, OSG knows about
+    -- their `geom` members, not about the instances themselves.
+    -- Use the `geom` if it's there.
+    local o = orig
+    local n = new
+    if getmetatable(o) == Content or type(o.geom) == 'table' then o = o.geom end
+    if getmetatable(n) == Content or type(n.geom) == 'table' then n = n.geom end
+
+    -- Make the changes
+    local parent = o:getParent(0)
+    if not parent then
+        error('Original node has no parent')
+    end
+
+    parent:addChild(n)
+    parent:removeChild(o)
+    n:addChild(o)
+end
+sethelp('insert_above',[[
+insert_above(existing_node, new_node): Inserts new_node between
+existing_node and existing_node's first parent.  new_node must be
+an osg::Group or descendant thereof (e.g., a MatrixTransform or
+PositionAttitudeTransform).]], true)
+
 -- Put the last-added child in the model under a transform and return
 -- the transform.
 function xform()
+    if not S then   -- friendly reminder
+        print('No current shape - new transform will have no children')
+    end
+
     local child = S
     MODEL:removeChild(S)
 
@@ -253,13 +303,16 @@ function xform()
                 0,1,0,0,
                 0,0,1,0,
                 0,0,0,1}
-    S:addChild(child)
+    if child then
+        S:addChild(child)
+    end
 
     MODEL:addChild(S)
     return S
 end
 sethelp('xform',[[xform(): Put the last-added child (S) under a
-MatrixTransform and return that transform.]],true)
+MatrixTransform and return that transform.  Also sets S to the
+newly-added transform.]],true)
 
 --=========================================================================--
 
@@ -300,7 +353,7 @@ function relol()
     else            -- Set up to grab the new T0 on the next frame
         doNextFrame(function(_, sim_time)
             T0 = sim_time
-            --print('T0 is now ' .. tostring(T0))
+            print('T0 is now ' .. tostring(T0))
         end)
     end
 end
