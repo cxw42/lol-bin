@@ -11,8 +11,14 @@ OSG=../osg/build-gcc
 LOL=../lua-osg-livecoding
 LOLBUILD=${LOL}/build-gcc
 
-# DLLs we use
-DLLS= \
+# Output directories
+C=./cygwin
+	# for running within Cygwin
+Z=./standalone
+	# for running on a system without Cygwin
+
+# Cygwin-provided DLLs we use
+CYGDLLS= \
 	/usr/bin/cygbz2-1.dll \
 	/usr/bin/cygcdt-5.dll \
 	/usr/bin/cygcgraph-6.dll \
@@ -35,35 +41,56 @@ DLLS= \
 	/usr/bin/cygvorbisenc-2.dll \
 	/usr/bin/cygz.dll
 
+.PHONY: build-cygwin build-standalone osg other zip all
+
 # Show the package size after updating.
-all: zygwin
-	du -cks --exclude='.git/*' .
+all: build-cygwin build-standalone
+	@du -cks --exclude='.git/*' ${C} | head -1
+	@du -cks --exclude='.git/*' ${Z} | head -1
 
-# Call ourselves "zygwin" to avoid conflict with an existing cygwin installation
-zygwin: osg other livecoding.exe
-	cp `which cygwin1.dll` bin/zygwin1.dll
-	# ldd dependencies
-	cp ${DLLS} bin
-	#
-	find . \( -name \*.exe -o -name \*.dll -o -name \*.so \) -print0 | \
-		xargs -0 -n1 sed -i 's/cygwin1\.dll/zygwin1.dll/g'
+zip: all
+	7z a -mx=9 ${C}.7z ${C}
+	7z a -mx=9 ${Z}.7z ${Z}
+	@ls -lh ${C}.7z ${Z}.7z
 
-# Copy and strip OSG DLLs
+build-cygwin: osg other ${C}/livecoding.exe
+
+# Copy and strip OSG DLLs into ${C}
 osg:
 	### OSG DLLs #####################################################
+	@mkdir -p "${C}"
 	find ${OSG}/bin -name '*.dll' -printf "%P\0" | \
 		xargs -0 -n1 sh -c \
-		'D="bin/$$0"; S="${OSG}/bin/$$0"; \
+		'D="${C}/bin/$$0"; S="${OSG}/bin/$$0"; \
+		mkdir -p "$$(dirname "$$D")"; \
 		[ \! $$S -nt $$D ] && exit; echo "$$0"; \
 		strip -o "$$D" "$$S"'
 
-# Copy other files
+# Copy other files into ${C}
 other:
 	### Other files ##################################################
-	cp -R ${LOL}/{assets,legal,lua,samples} .
+	@mkdir -p "${C}"
+	cp -R ${LOL}/{assets,legal,lua,samples} ${C}
+	cp runme* ${C}
 
 #
-livecoding.exe: ${LOLBUILD}/livecoding.exe
+${C}/livecoding.exe: ${LOLBUILD}/livecoding.exe
 	### livecoding.exe ###############################################
-	cp $< $@
+	@mkdir -p "${C}"
+	strip -o $@ $<
+
+build-standalone: build-cygwin
+	@mkdir -p "${Z}"
+	@# Grab osg, other, livecoding from the cygwin tree
+	cp -Rf ${C}/* ${Z}
+
+	@# Grab the Cygwin dependenciees
+	mkdir -p "${Z}/bin"
+	cp "$$(which cygwin1.dll)" "${Z}/bin/zygwin1.dll"
+	cp ${CYGDLLS} ${Z}/bin
+
+	@# Call ourselves "zygwin" to avoid conflict with an existing
+	@# cygwin installation
+	find ${Z} \( -name \*.exe -o -name \*.dll -o -name \*.so \) -print0 | \
+		xargs -0 -n1 sed -i 's/cygwin1\.dll/zygwin1.dll/g'
 
